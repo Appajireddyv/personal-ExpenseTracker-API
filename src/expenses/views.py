@@ -121,10 +121,5 @@ def reset_all(request):
         Expense.objects.all().delete()
         messages.success(request, 'All expenses have been reset.')
         return redirect('dashboard')
+
     return render(request, 'expenses/confirm_reset.html')
-    expense = get_object_or_404(Expense, pk=pk)
-    if request.method == 'POST':
-        expense.delete()
-        messages.success(request, 'Expense deleted.')
-        return redirect('dashboard')
-    return render(request, 'expenses/confirm_delete.html', {'expense': expense})
