@@ -1,0 +1,62 @@
+{% extends "expenses/base.html" %}
+{% block title %}{{ action }} Expense — Expenzo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">{{ action }} Expense</h1>
+  <a href="/" class="btn btn-ghost">← Back</a>
+</div>
+
+<div class="card" style="max-width: 560px;">
+  <form method="post" class="form-grid">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label class="form-label">Title</label>
+      {{ form.title }}
+      {% if form.title.errors %}<span style="color: var(--accent2); font-size: 0.75rem;">{{ form.title.errors|join:", " }}</span>{% endif %}
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Amount (₹)</label>
+        {{ form.amount }}
+        {% if form.amount.errors %}<span style="color: var(--accent2); font-size: 0.75rem;">{{ form.amount.errors|join:", " }}</span>{% endif %}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        {{ form.date }}
+        {% if form.date.errors %}<span style="color: var(--accent2); font-size: 0.75rem;">{{ form.date.errors|join:", " }}</span>{% endif %}
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Category</label>
+      {{ form.category }}
+      {% if form.category.errors %}<span style="color: var(--accent2); font-size: 0.75rem;">{{ form.category.errors|join:", " }}</span>{% endif %}
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Notes (optional)</label>
+      {{ form.notes }}
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; padding-top: 0.5rem;">
+      <button type="submit" class="btn btn-primary" style="flex:1;">
+        {% if action == 'Add' %}+ Add Expense{% else %}Save Changes{% endif %}
+      </button>
+      <a href="/" class="btn btn-ghost">Cancel</a>
+    </div>
+  </form>
+</div>
+
+<style>
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.7);
+    cursor: pointer;
+  }
+  select.form-select option {
+    background: #1C1C22;
+  }
+</style>
+{% endblock %}

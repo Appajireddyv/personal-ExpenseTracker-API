@@ -1,0 +1,30 @@
+{% extends "expenses/base.html" %}
+{% block title %}Reset All Expenses — Expenzo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Reset All Expenses</h1>
+</div>
+
+<div class="card" style="max-width: 480px;">
+  <div style="text-align: center; padding: 1rem 0 1.5rem;">
+    <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+    <p style="color: var(--text); font-family: var(--font-head); font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem;">
+      Delete ALL expenses?
+    </p>
+    <p style="color: var(--muted); font-size: 0.85rem;">
+      This will permanently delete every expense record. This action cannot be undone.
+    </p>
+  </div>
+
+  <div style="display: flex; gap: 0.75rem;">
+    <form method="post" style="flex:1;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger" style="width: 100%; padding: 0.7rem;">
+        🗑 Yes, Reset Everything
+      </button>
+    </form>
+    <a href="/" class="btn btn-ghost" style="flex:1; text-align:center; padding: 0.7rem;">Cancel</a>
+  </div>
+</div>
+{% endblock %}

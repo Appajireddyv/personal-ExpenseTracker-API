@@ -1,0 +1,167 @@
+{% extends "expenses/base.html" %}
+{% block title %}Dashboard — Expenzo{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1 class="page-title">Dashboard</h1>
+  <div style="display:flex; gap: 0.6rem;">
+    <a href="/reset/" class="btn btn-danger">🗑 Reset All</a>
+    <a href="/add/" class="btn btn-primary">+ Add Expense</a>
+  </div>
+</div>
+
+<!-- STAT CARDS -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="card-title">This Month</div>
+    <div class="stat-value">₹{{ monthly_total|floatformat:2 }}</div>
+    <div class="stat-label">{{ monthly_count }} expense{{ monthly_count|pluralize }}</div>
+  </div>
+  <div class="stat-card">
+    <div class="card-title">All Time</div>
+    <div class="stat-value">₹{{ all_time_total|floatformat:2 }}</div>
+    <div class="stat-label">Total tracked</div>
+  </div>
+  <div class="stat-card">
+    <div class="card-title">Daily Average</div>
+    <div class="stat-value">₹{{ monthly_total|floatformat:0 }}</div>
+    <div class="stat-label">This month</div>
+  </div>
+</div>
+
+<!-- CHARTS -->
+<div class="charts-grid">
+  <div class="card">
+    <div class="card-title">Spending — Last 30 Days</div>
+    <div class="chart-wrap">
+      <canvas id="lineChart"></canvas>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">By Category (This Month)</div>
+    <div class="chart-wrap">
+      <canvas id="doughnutChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSE LIST -->
+<div class="card">
+  <div class="page-header" style="margin-bottom: 1rem;">
+    <div class="card-title" style="margin:0;">Recent Expenses</div>
+    <form method="get" style="display:flex; gap: 0.5rem; align-items: center;">
+      <select name="category" class="filter-select" onchange="this.form.submit()">
+        <option value="">All Categories</option>
+        {% for val, label in categories %}
+        <option value="{{ val }}" {% if category_filter == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <input type="month" name="month" class="filter-select" value="{{ month_filter }}" onchange="this.form.submit()">
+      {% if category_filter or month_filter %}
+      <a href="/" class="btn btn-ghost" style="font-size:0.75rem;">✕ Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if expenses %}
+  <ul class="expense-list">
+    {% for expense in expenses %}
+    <li class="expense-item">
+      <div class="expense-dot" style="background: {{ expense.category_color }};"></div>
+      <div class="expense-info">
+        <div class="expense-title">{{ expense.title }}</div>
+        <div class="expense-meta">{{ expense.category_label }} &middot; {{ expense.date|date:"M j, Y" }}{% if expense.notes %} &middot; {{ expense.notes|truncatechars:40 }}{% endif %}</div>
+      </div>
+      <div class="expense-amount">₹{{ expense.amount|floatformat:2 }}</div>
+      <div class="expense-actions">
+        <a href="/edit/{{ expense.pk }}/" class="icon-btn" title="Edit">✏️</a>
+        <a href="/delete/{{ expense.pk }}/" class="icon-btn del" title="Delete">🗑</a>
+      </div>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-icon">💸</div>
+    <p>No expenses yet. <a href="/add/" style="color: var(--accent);">Add your first one!</a></p>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+const lineCtx = document.getElementById('lineChart').getContext('2d');
+const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+
+const dailyLabels = {{ daily_labels|safe }};
+const dailyValues = {{ daily_values|safe }};
+const catLabels = {{ category_labels|safe }};
+const catTotals = {{ category_totals|safe }};
+const catColors = {{ category_colors|safe }};
+
+Chart.defaults.color = '#7A7A90';
+Chart.defaults.font.family = "'DM Mono', monospace";
+
+new Chart(lineCtx, {
+  type: 'line',
+  data: {
+    labels: dailyLabels,
+    datasets: [{
+      data: dailyValues,
+      borderColor: '#C8FF00',
+      backgroundColor: 'rgba(200,255,0,0.06)',
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      fill: true,
+      tension: 0.4,
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { display: false }, tooltip: {
+      backgroundColor: '#141418',
+      borderColor: '#2A2A35',
+      borderWidth: 1,
+      callbacks: { label: ctx => ' ₹' + ctx.parsed.y.toFixed(2) }
+    }},
+    scales: {
+      x: { grid: { color: '#1C1C22' }, ticks: { maxTicksLimit: 8, maxRotation: 0 } },
+      y: { grid: { color: '#1C1C22' }, ticks: { callback: v => '₹' + v } }
+    }
+  }
+});
+
+if (catTotals.length > 0) {
+  new Chart(doughnutCtx, {
+    type: 'doughnut',
+    data: {
+      labels: catLabels,
+      datasets: [{
+        data: catTotals,
+        backgroundColor: catColors,
+        borderWidth: 0,
+        hoverOffset: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: '68%',
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: { boxWidth: 10, padding: 12, font: { size: 10 } }
+        },
+        tooltip: {
+          backgroundColor: '#141418',
+          borderColor: '#2A2A35',
+          borderWidth: 1,
+          callbacks: { label: ctx => ' ₹' + ctx.parsed.toFixed(2) }
+        }
+      }
+    }
+  });
+}
+</script>
+{% endblock %}
